@@ -1,11 +1,14 @@
 ﻿
-TrasferingFiles app = new TrasferingFiles();
+TrasferingFiles CopyingFilesApp = new TrasferingFiles();
 
-Console.Write("Введите путь к исходному каталогу:");
-string pathToSourceDirectoryString = Console.ReadLine();
-DirectoryInfo pathToSourceDirectory  = new DirectoryInfo(pathToSourceDirectoryString);
+while (CopyingFilesApp.CorrectInitialCondition==false)
+{
+    CopyingFilesApp.startProgram();
+}
 
-Console.Write("Введите путь к исходному каталогу:");
-string pathToDestinationalDirectoryString = Console.ReadLine();
-DirectoryInfo pathToDestinationalDirectory = new DirectoryInfo(pathToDestinationalDirectoryString);
-
+/*do
+{
+    
+    /*CopyingFilesApp.copyingFiles;
+}
+while (CopyingFilesApp.EndProgramFlag == false);*/

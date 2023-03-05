@@ -1,14 +1,6 @@
 ﻿
-TrasferingFiles CopyingFilesApp = new TrasferingFiles();
+InputParametersForStartingTheProgram checkInputParameters = new InputParametersForStartingTheProgram();
+checkInputParameters.checkData();
 
-while (CopyingFilesApp.CorrectInitialCondition==false)
-{
-    CopyingFilesApp.startProgram();
-}
-
-/*do
-{
-    
-    /*CopyingFilesApp.copyingFiles;
-}
-while (CopyingFilesApp.EndProgramFlag == false);*/
+TrasferingFiles copyingFilesApp = new TrasferingFiles(checkInputParameters);
+copyingFilesApp.startThreadCopying();

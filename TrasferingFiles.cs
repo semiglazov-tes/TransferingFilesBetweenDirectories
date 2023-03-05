@@ -3,71 +3,59 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Threading.Tasks;
 using System.IO;
 
-internal class TrasferingFiles{
-
-    private bool _endProgramFlag=false;
-    private bool _correctInitialCondition = false;
-    private DirectoryInfo? _pathToSourceDirectory;
-    private DirectoryInfo? _pathToDestinationDirectory;
-    public bool EndProgramFlag { get; set; }
-    public bool CorrectInitialCondition { get; set; }
-    public DirectoryInfo? PathToSourceDirectory{
-        get{
-           return _pathToSourceDirectory;
-        }
-        set{
-            if(value != null && value.Exists == true){
-                _pathToDestinationDirectory = value;
-                CorrectInitialCondition = true;
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Проверьте правильность ввода пути к исходному каталогу");
-                Console.ResetColor();
-            }
-        }
-    }
-    public DirectoryInfo? PathToDestinationDirectory
+internal class TrasferingFiles
+{
+    private InputParametersForStartingTheProgram _inputParametr;
+    private bool _endProgramFlag = false;
+    private Thread _copyingThread;
+    private HashSet<FileInfo> _listOfFilesInTheCurrentIteratuion;
+    private HashSet<FileInfo> _listOfFilesInThePreviousIteratuion;
+    public InputParametersForStartingTheProgram InputParametr { set { _inputParametr = value; } }
+    public bool EndProgramFlag {get; set;}
+    public void startThreadCopying()
     {
-        get
+        _copyingThread = new Thread(copyingFiles);
+        _copyingThread.Start();
+    }
+
+    public void copyingFiles() 
+    {
+        while (_endProgramFlag== false)
         {
-            return _pathToSourceDirectory;
-        }
-        set
-        {
-            if (value != null && value.Exists == true) {
-                _pathToDestinationDirectory = value;
-                CorrectInitialCondition = true;
+            if (_inputParametr.PathToSourceDirectory.GetFiles().Length > 0)
+            {
+                _listOfFilesInTheCurrentIteratuion = new HashSet<FileInfo>(_inputParametr.PathToSourceDirectory.GetFiles());
+                _listOfFilesInThePreviousIteratuion = new HashSet<FileInfo>(_inputParametr.PathToDestinationDirectory.GetFiles());
+                _listOfFilesInTheCurrentIteratuion.ExceptWith(_listOfFilesInThePreviousIteratuion);
+                foreach (FileInfo file in _listOfFilesInTheCurrentIteratuion)
+                {
+                    string outputFile = Path.Combine(_inputParametr.PathToDestinationDirectory.ToString(), file.Name);
+                    try
+                    {
+                        file.CopyTo(outputFile, true);
+                        Console.WriteLine($"Произведено копирование файла {file.Name} из папки {_inputParametr.PathToSourceDirectory.Name} в папку {_inputParametr.PathToDestinationDirectory.Name}");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        Console.WriteLine($"Ошибка в копировании файла {file.Name}.Причина ошибки{ex.Message}");
+                    }
+                }
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Проверьте правильность ввода пути к каталогу назначения");
-                Console.ResetColor();
+                Console.WriteLine("Исходная папка пуста");
             }
+            Thread.Sleep((int)_inputParametr.DataReadInterval * 1000);
+            //EndProgramFlag = true;
         }
     }
-
-    public void startProgram() {
-        Console.Write("Введите путь к исходному каталогу:");
-        string? pathToSourceDirectoryString = Console.ReadLine();
-        PathToSourceDirectory = new DirectoryInfo(pathToSourceDirectoryString);
-
-        Console.Write("Введите путь к исходному каталогу:");
-        string? pathToDestinationalDirectoryString = Console.ReadLine();
-        PathToDestinationDirectory = new DirectoryInfo(pathToDestinationalDirectoryString);
+    public TrasferingFiles(InputParametersForStartingTheProgram inputParametr)
+    {
+        InputParametr=inputParametr;
     }
-    public void copyingFiles() {
-        
-    }
-    /*public TrasferingFiles(DirectoryInfo? pathToSourceDirectory, DirectoryInfo? pathToDestinationalDirectory)
-        {
-            
-        }
-    }*/
+    
 }
 

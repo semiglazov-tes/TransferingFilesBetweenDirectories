@@ -8,12 +8,23 @@ using System.IO;
 
     internal class InputParametersForStartingTheProgram
     {
+        //флаг указывающий, что ввод пути к папке Source некоректен
         private bool _incorrectInitialConditionForSourceDirectory = true;
+        //флаг указывающий, что ввод пути к папке Tagert некоректен
         private bool _incorrectInitialConditionForDestinationDirectory = true;
+        //флаг указывающий, что ввод интервала чтения данных некоректен
         private bool _incorrectdataReadInterval = true;
+        // поле принимающее папку Source
         private DirectoryInfo? _pathToSourceDirectory;
+        // поле принимающее папку Tagert
         private DirectoryInfo? _pathToDestinationDirectory;
+        // поле принимающее интервал чтения данных
         private uint _dataReadInterval;
+        // флаг указывающий, необходимо задание опциональных параметров или нет
+        private bool _settingAdditionalParameters;
+        // количество потоков копирования данных
+        private uint _numberOfThreads=1;
+        // свойство реализующее установку/получение значения _pathToSourceDirectory 
         public DirectoryInfo? PathToSourceDirectory
         {
             get
@@ -35,6 +46,7 @@ using System.IO;
                 }
             }
         }
+        // свойство реализующее установку/получение значения _pathToDestinationDirectory 
         public DirectoryInfo? PathToDestinationDirectory
         {
             get
@@ -56,6 +68,7 @@ using System.IO;
                 }
             }
         }
+        // свойство реализующее установку/получения значения _dataReadInterval
         public uint DataReadInterval
         {
             get
@@ -64,14 +77,24 @@ using System.IO;
             }
             set
             {
-                if (value>=0)
-                {
-                    _dataReadInterval = value;
-                    _incorrectdataReadInterval = false;
-                }
+                _dataReadInterval = value;
+                _incorrectdataReadInterval = false;
             }
         }
+        // свойство реализующее установку/получение значения _settingAdditionalParameters
+        public bool SettingAdditionalParameters 
+        {
+            get
+            {
+                return _settingAdditionalParameters;
+            }
+            set
+            {
+            _settingAdditionalParameters = value;
 
+            }
+    }
+        // метод, который принимает параметры запуска программы с консоли и обрабатывает исключения, возникающие при некорректном вводе параметров
         public void startCheckInputData()
         {
             Console.Write("Введите путь к исходнному каталогу(source):");
@@ -111,7 +134,35 @@ using System.IO;
                 Console.WriteLine("Значение интервала чтения данных должно лежать в диапозоне от 0 до 4294967295 секунд и быть целым числом");
                 Console.ResetColor();
             }
+            Console.Write("Задать опциональные параметры работы программы(1-да/0-нет):");
+            try
+            {
+                SettingAdditionalParameters = Convert.ToBoolean(Console.ReadLine());
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Ошибка: {ex.Message}");
+                Console.WriteLine("Значение параметра должно быть равным:1(при необходимости задания дополнительных парамметров программы) или 0(если задание дополнительных парамметров программы не требуется");
+                Console.ResetColor();
+            }
+            if (SettingAdditionalParameters == true) 
+            {
+                Console.Write("Введите количество потоков копирования данных:");
+                try
+                {
+                    DataReadInterval = Convert.ToUInt32(Console.ReadLine());
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Ошибка: {ex.Message}");
+                    Console.WriteLine("Значение интервала чтения данных должно лежать в диапозоне от 0 до 4294967295 секунд и быть целым числом");
+                    Console.ResetColor();
+                }
+            }
         }
+        // методы, проверяющие все ли параметры запуска программы введены корректно
         public bool checkIncorrectInitial()
         {
             if(_incorrectInitialConditionForSourceDirectory || _incorrectInitialConditionForDestinationDirectory || _incorrectdataReadInterval == true)
@@ -127,4 +178,4 @@ using System.IO;
                 startCheckInputData();
             }
         }
-}
+    }

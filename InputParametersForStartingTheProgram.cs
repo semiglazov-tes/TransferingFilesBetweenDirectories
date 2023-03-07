@@ -14,8 +14,16 @@ using System.IO;
         private bool _incorrectInitialConditionForDestinationDirectory = true;
         //флаг указывающий, что ввод интервала чтения данных некоректен
         private bool _incorrectdataReadInterval = true;
-        //флаг указывающий, что ввод количества потоков введено некоректно
+        //флаг указывающий, что ввод необходимости опциональных параметров не верен
+        private bool _incorrectsettingAdditionalParameters = true;
+        //флаг указывающий, что ввод количества потоков введено некоректно _numberOfThreads
         private bool _incorrectNumberOfThreads = true;
+        //флаг указывающий, что выбрано некорректное значение для _needToDeleteFiles  
+        private bool _incorrectNeedToDeleteFiles = true;
+        //флаг указывающий, что выбрано некорректное значение для _needToShowFilesInConsole  
+        private bool _incorrectNeedToShowFilesInConsole = true;
+        //флаг указывающий, что выбрано некорректное значение для _needCountTheAmountOfCopiedData  
+        private bool _incorrectNeedCountTheAmountOfCopiedData = true;
         // поле принимающее папку Source
         private DirectoryInfo? _pathToSourceDirectory;
         // поле принимающее папку Tagert
@@ -49,8 +57,10 @@ using System.IO;
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Проверьте правильность ввода пути к исходному каталогу");
+                    Console.Write("Каталог по заданному пути отсутствует");
                     Console.ResetColor();
+                    Thread.Sleep(2000);
+                    Console.Clear();
                 }
             }
         }
@@ -71,8 +81,10 @@ using System.IO;
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Проверьте правильность ввода пути к каталогу назначения");
+                    Console.Write("Каталог по заданному пути отсутствует");
                     Console.ResetColor();
+                    Thread.Sleep(2000);
+                    Console.Clear();
                 }
             }
         }
@@ -98,7 +110,8 @@ using System.IO;
             }
             set
             {
-            _settingAdditionalParameters = value;
+                _settingAdditionalParameters = value;
+                _incorrectsettingAdditionalParameters = false;
             }
     }
         // свойство реализующее установку/получение значения _numberOfThreads
@@ -118,8 +131,10 @@ using System.IO;
                 else 
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Количество потоков не может равным 0");
+                    Console.Write("Количество потоков не может равным 0");
                     Console.ResetColor();
+                    Thread.Sleep(2000);
+                    Console.Clear();
                 }
             }
         }
@@ -128,11 +143,12 @@ using System.IO;
         {
             get
             {
-                return _settingAdditionalParameters;
+                return _needToDeleteFiles;
             }
             set
             {
-                _settingAdditionalParameters = value;
+                _needToDeleteFiles = value;
+                _incorrectNeedToDeleteFiles = false;
             }
         }
         // свойство реализующее установку/получение значения _needToShowFilesInConsole 
@@ -145,7 +161,8 @@ using System.IO;
             set
             {
                 _needToShowFilesInConsole = value;
-            }
+                _incorrectNeedToShowFilesInConsole = false;
+        }
         }
         // свойство реализующее установку/получение значения _needCountTheAmountOfCopiedData
         public bool NeedCountTheAmountOfCopiedData
@@ -157,126 +174,205 @@ using System.IO;
             set
             {
                 _needCountTheAmountOfCopiedData = value;
+                _incorrectNeedCountTheAmountOfCopiedData = false;
             }
         }
         
         // метод, который принимает параметры запуска программы с консоли и обрабатывает исключения, возникающие при некорректном вводе параметров
         public void startCheckInputData()
         {
-            Console.Write("Введите путь к исходнному каталогу(source):");
-            string? pathToSourceDirectoryString = Console.ReadLine();
-            try
+            while (_incorrectInitialConditionForSourceDirectory == true)
             {
-                PathToSourceDirectory = new DirectoryInfo(pathToSourceDirectoryString);
-            }
-            catch (System.ArgumentException)
-            {
+                Console.Write("Введите путь к исходнному каталогу(source):");
+                string pathToSourceDirectoryString = Console.ReadLine();
+                Console.Clear();
+                try
+                {
+                    PathToSourceDirectory = new DirectoryInfo(pathToSourceDirectoryString);
+                }
+                catch (Exception)
+                {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("В поле ввода передана пустая директория.Введите путь к директории для корректной работы программы");
+                Console.Write("Путь к каталогу не может быть пустой строкой");
                 Console.ResetColor();
+                Thread.Sleep(2000);
+                Console.Clear();
+                }
             }
-            Console.Write("Введите путь к каталогу назначения(target):");
-            string? pathToDestinationalDirectoryString = Console.ReadLine();
+            while (_incorrectInitialConditionForDestinationDirectory==true)
+            {
+                Console.Write("Введите путь к каталогу назначения(target):");
+                string pathToDestinationalDirectoryString = Console.ReadLine();
+                Console.Clear();
             try
             {
+                if (PathToSourceDirectory.FullName== pathToDestinationalDirectoryString)
+                {
+                    throw new Exception();
+                }
                 PathToDestinationDirectory = new DirectoryInfo(pathToDestinationalDirectoryString);
             }
-            catch (System.ArgumentException)
+            catch (Exception)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("В поле ввода передана пустая директория.Введите путь к директории для корректной работы программы");
+                Console.Write("Путь к каталогу не может быть пустой строкой.Путь к папке Tagert не должен совпадать с Source");
                 Console.ResetColor();
+                Thread.Sleep(2000);
+                Console.Clear();
             }
-            Console.Write("Введите интервал чтения данных(значение в секундах):");
-            try
+            }   
+            while (_incorrectdataReadInterval==true)
             {
-                DataReadInterval = Convert.ToUInt32(Console.ReadLine());
+                Console.Write("Введите интервал чтения данных(значение в секундах):");
+                try
+                {
+                    DataReadInterval = Convert.ToUInt32(Console.ReadLine());
+                    Console.Clear();
+                }
+                catch (Exception )
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("Значение интервала чтения данных должно лежать в диапозоне от 0 до 4294967295 секунд и быть целым числом");
+                    Console.ResetColor();
+                    Thread.Sleep(2000);
+                    Console.Clear();
+                }
             }
-            catch (Exception ex)
+            while (_incorrectsettingAdditionalParameters == true)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Ошибка: {ex.Message}");
-                Console.WriteLine("Значение интервала чтения данных должно лежать в диапозоне от 0 до 4294967295 секунд и быть целым числом");
-                Console.ResetColor();
-            }
-            Console.Write("Задать опциональные параметры работы программы(1-да/0-нет):");
-            try
-            {
-                SettingAdditionalParameters = Convert.ToBoolean(Convert.ToInt32(Console.ReadLine()));
-            }
-                catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Ошибка: {ex.Message}");
-                Console.WriteLine("Значение выбирается из следующих:1-да/0-нет");
-                Console.ResetColor();
+                Console.Write("Задать опциональные параметры работы программы(1-да/0-нет):");
+                string inputSettingAdditional= Console.ReadLine();
+                Console.Clear();
+                try
+                {   
+                    switch (inputSettingAdditional)
+                    {
+                        case "1":
+                          SettingAdditionalParameters =true;
+                          break;
+                        case "0":
+                          SettingAdditionalParameters = false;
+                          break;
+                        default:
+                            throw new Exception();
+                            break;
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("Значение флага должно иметь одно из следующих значений:1-да/0-нет");
+                    Console.ResetColor();
+                    Thread.Sleep(2000);
+                    Console.Clear();
+                }
             }
             if (SettingAdditionalParameters == true) 
             {
-                Console.Write("Введите количество потоков копирования данных:");
-                try
+                while (_incorrectNumberOfThreads==true)
                 {
-                    NumberOfThreads = Convert.ToUInt32(Console.ReadLine());
+                    Console.Write("Введите количество потоков копирования данных:");
+                    try
+                    {
+                        NumberOfThreads = Convert.ToUInt32(Console.ReadLine());
+                        Console.Clear();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("Значение количества потоков копирования данных должно быть целым положительным числом");
+                        Console.ResetColor();
+                        Thread.Sleep(2000);
+                        Console.Clear();
+                    }
                 }
-                catch (Exception ex)
+                while (_incorrectNeedToDeleteFiles==true)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Ошибка: {ex.Message}");
-                    Console.WriteLine("Значение количества потоков копирования данных должно быть целым положительным числом");
-                    Console.ResetColor();
+                    Console.Write("Удалять файлы из папки Source после копирования?(1-да/0-нет):");
+                    string inputNeedToDeleteFiles= Console.ReadLine();
+                    Console.Clear();
+                    try
+                    {
+                        switch (inputNeedToDeleteFiles)
+                        {
+                            case "1":
+                            NeedToDeleteFiles =true;
+                            break;
+                            case "0":
+                            NeedToDeleteFiles = false;
+                            break;
+                            default:
+                                throw new Exception();
+                                break;
+                        }   
+                    }
+                    catch (Exception)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("Значение выбирается из следующих:1-да/0-нет");
+                        Console.ResetColor();
+                        Thread.Sleep(2000);
+                        Console.Clear();
+                    }
                 }
-                Console.Write("Удалять файлы из папки Source после копирования?(1-да/0-нет):");
-                try
+                while (_incorrectNeedToShowFilesInConsole==true)
                 {
-                    NeedToDeleteFiles = Convert.ToBoolean(Convert.ToInt32(Console.ReadLine()));
+                    Console.Write("Выводить на консоль копируемые файлы?(1-да/0-нет):");
+                    string inputNeedToShowFilesInConsole = Console.ReadLine();
+                    Console.Clear();
+                    try
+                    {
+                        switch (inputNeedToShowFilesInConsole)
+                        {
+                            case "1":
+                                NeedToShowFilesInConsole = true;
+                                break;
+                            case "0":
+                                NeedToShowFilesInConsole = false;
+                                break;
+                            default:
+                                throw new Exception();
+                                break;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("Значение выбирается из следующих:1-да/0-нет");
+                        Console.ResetColor();
+                        Thread.Sleep(2000);
+                        Console.Clear();
+                    }
                 }
-                catch (Exception ex)
+                while (_incorrectNeedCountTheAmountOfCopiedData==true)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Ошибка: {ex.Message}");
-                    Console.WriteLine("Значение выбирается из следующих:1-да/0-нет");
-                    Console.ResetColor();
+                    Console.Write("Производить вычисление объема копируемыех файлов?(1-да/0-нет):");
+                    string inputNeedCountTheAmountOfCopiedData = Console.ReadLine();
+                    
+                    try
+                    {
+                        switch (inputNeedCountTheAmountOfCopiedData)
+                        {
+                            case "1":
+                                NeedCountTheAmountOfCopiedData = true;
+                                break;
+                            case "0":
+                                NeedCountTheAmountOfCopiedData = false;
+                                break;
+                            default:
+                                throw new Exception();
+                                break;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("Значение выбирается из следующих:1-да/0-нет");
+                        Console.ResetColor();
+                        Thread.Sleep(2000);
+                        Console.Clear();
+                    }
                 }
-                Console.Write("Выводить на консоль копируемые файлы?(1-да/0-нет):");
-                try
-                {
-                    NeedToShowFilesInConsole = Convert.ToBoolean(Convert.ToInt32(Console.ReadLine()));
-                }
-                catch (Exception ex)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Ошибка: {ex.Message}");
-                    Console.WriteLine("Значение выбирается из следующих:1-да/0-нет");
-                    Console.ResetColor();
-                }
-                Console.Write("Производить вычисление объема копируемыех файлов?(1-да/0-нет):");
-                try
-                {
-                    NeedCountTheAmountOfCopiedData = Convert.ToBoolean(Convert.ToInt32(Console.ReadLine()));
-                }
-                catch (Exception ex)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Ошибка: {ex.Message}");
-                    Console.WriteLine("Значение выбирается из следующих:1-да/0-нет");
-                    Console.ResetColor();
-                }
-            }
-        }
-        // методы, проверяющие все ли параметры запуска программы введены корректно
-        public bool checkIncorrectInitial()
-        {
-            if(_incorrectInitialConditionForSourceDirectory || _incorrectInitialConditionForDestinationDirectory || _incorrectdataReadInterval == true )
-            {
-                return true;
-            }
-            return false;
-        }
-        public void checkData()
-        {
-            while (checkIncorrectInitial() == true)
-            {
-                startCheckInputData();
             }
         }
     }

@@ -13,18 +13,49 @@ internal class TrasferingFiles
     private long _amountOfDataCopied;
     // флаг, который необходим для остановки процесса копирования
     private bool _copyingAllowed=true;
-    // метод реализующий остановку процесса копирования
+    // флаг принимающий команду завершения приложения
+    private bool _exitComand = false;
+    // метод реализующий остановку процесса копирования и завершение работы приложения
     private void _stopCopyingFiles()
     {
          while (true)
             {
-                if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.P && Console.ReadKey(true).Modifiers== ConsoleModifiers.Control)
+                if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.P)
                 {
-                    Console.WriteLine("Копирование файлов оставнолено.");
+                    Console.WriteLine("Копирование файлов оставнолено");
                    _copyingAllowed = false;
-                    break;
+                    //eсли установлен флаг NeedCountTheAmountOfCopiedData, то производим подсчет общего объема скопированных файлов
+                    if (_inputParametr.NeedCountTheAmountOfCopiedData == true)
+                    {
+                        Console.WriteLine($"Общий объем скопированных данных:{_amountOfDataCopied} байт");
+                    }
+                    Thread.Sleep(3000);
+                    Console.Clear();
+
+                    while (_exitComand == false)
+                    {   
+                        Console.Write("Нажмите клавишу Q для окончания работы программы: ");
+                        try
+                        {
+                            string exitComand = Console.ReadLine().ToLower();
+                            if (exitComand != "q")
+                            {
+                                throw new Exception();
+                            }
+                            Environment.Exit(0);
+                        }
+                        catch (Exception)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write("Для завершения программы нажмите клавишу Q");
+                            Console.ResetColor();
+                            Thread.Sleep(2000);
+                            Console.Clear();
+                        }
+                    }
+                break;
                 }
-                //Thread.Sleep(50);
+                Thread.Sleep(200);
             }
     }
     // свойство реализующее установку значения _inputParametr
@@ -32,7 +63,8 @@ internal class TrasferingFiles
     // метод реализующий основную логику программы- копирование файлов из папки Source в папку Target 
     public void copyingFiles()
     {
-        Thread stopCopyingFilesSearchingEvent=new Thread(_stopCopyingFiles);
+        // создаем и запускаем отдельный поток, который следит за событием нажатия клавиши P(остановка копирования), посредством метода _stopCopyingFiles()
+        Thread stopCopyingFilesSearchingEvent =new Thread(_stopCopyingFiles);
         stopCopyingFilesSearchingEvent.Start(); 
         while (_copyingAllowed)
         {
@@ -48,6 +80,7 @@ internal class TrasferingFiles
                         //на каждой итерации цикла проверяем, копировался ли данный файл из папки Source в папку Target. Если не копировался- осуществляем копирование 
                         if (!File.Exists(outputFile))
                         {
+                            _amountOfDataCopied += file.Length;
                             //Запускаем пул потоков для копирования файлов в многопоточном режиме.Количество потоков в пуле установили в конструкторе класса TrasferingFiles
                             ThreadPool.QueueUserWorkItem(state =>
                             {
@@ -56,12 +89,6 @@ internal class TrasferingFiles
                                 if (_inputParametr.NeedToShowFilesInConsole == true)
                                 {
                                     Console.WriteLine($"Произведено копирование файла {file.Name} из папки {_inputParametr.PathToSourceDirectory.Name} в папку {_inputParametr.PathToDestinationDirectory.Name}");
-                                }
-                                //eсли установлен флаг NeedCountTheAmountOfCopiedData, то производим подсчет объема скопированных файлов
-                                if (_inputParametr.NeedCountTheAmountOfCopiedData == true)
-                                {
-                                    _amountOfDataCopied += file.Length;
-                                    Console.WriteLine($"Объем скопированных данных:{_amountOfDataCopied} байт");
                                 }
                                 //проверяем стоит ли флаг о необходимости удаления файлов из папки Source после копирования
                                 if (_inputParametr.NeedToDeleteFiles == true)

@@ -11,18 +11,36 @@ internal class TrasferingFiles
     private InputParametersForStartingTheProgram _inputParametr;
     // поле которое хранит объем скопированных данных
     private long _amountOfDataCopied;
+    // флаг, который необходим для остановки процесса копирования
+    private bool _copyingAllowed=true;
+    // метод реализующий остановку процесса копирования
+    private void _stopCopyingFiles()
+    {
+         while (true)
+            {
+                if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.P && Console.ReadKey(true).Modifiers== ConsoleModifiers.Control)
+                {
+                    Console.WriteLine("Копирование файлов оставнолено.");
+                   _copyingAllowed = false;
+                    break;
+                }
+                //Thread.Sleep(50);
+            }
+    }
     // свойство реализующее установку значения _inputParametr
     public InputParametersForStartingTheProgram InputParametr { set { _inputParametr = value; } }
     // метод реализующий основную логику программы- копирование файлов из папки Source в папку Target 
     public void copyingFiles()
     {
-        while (true)
+        Thread stopCopyingFilesSearchingEvent=new Thread(_stopCopyingFiles);
+        stopCopyingFilesSearchingEvent.Start(); 
+        while (_copyingAllowed)
         {
             //проверяем есть ли в папке Target файлы.При наличии файлов процесс протекает дальше
             if (_inputParametr.PathToSourceDirectory.GetFiles().Length > 0)
             {
                 //проходим циклом по файлам в папке Source
-                foreach (FileInfo file in _inputParametr.PathToSourceDirectory.GetFiles())
+                foreach (FileInfo file in _inputParametr.PathToSourceDirectory.GetFiles("*", SearchOption.AllDirectories))
                 {
                     string outputFile = Path.Combine(_inputParametr.PathToDestinationDirectory.ToString(), file.Name);
                     try

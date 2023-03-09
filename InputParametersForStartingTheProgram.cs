@@ -374,5 +374,9 @@ using System.IO;
                     }
                 }
             }
+            Console.Clear();
+            Console.WriteLine("Для остановки операции копирования нажмите клавишу- P");
+            Thread.Sleep(2000);
+            Console.Clear();
         }
     }

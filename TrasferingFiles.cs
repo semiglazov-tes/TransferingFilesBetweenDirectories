@@ -29,7 +29,7 @@ internal class TrasferingFiles
                     {
                         Console.WriteLine($"Общий объем скопированных данных:{_amountOfDataCopied} байт");
                     }
-                    Thread.Sleep(3000);
+                    Thread.Sleep(5000);
                     Console.Clear();
 
                     while (_exitComand == false)

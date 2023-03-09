@@ -15,6 +15,23 @@ internal class TrasferingFiles
     private bool _copyingAllowed=true;
     // флаг принимающий команду завершения приложения
     private bool _exitComand = false;
+    // cписок уникальных имен файлов в папке Source
+    private HashSet<string> _unicCopyingFilesName=new HashSet<string>();
+    // список в котором хранят уникальные FileInfo из Source
+    private List<FileInfo> _unicCopyingFiles=new List<FileInfo>();
+    // метод реализующий поиск уникальных файлов в папке Source и его подпапках
+    private void _searchUnicFile()
+    {
+        FileInfo[]  filesArr = _inputParametr.PathToSourceDirectory.GetFiles("*",SearchOption.AllDirectories);
+        foreach (FileInfo file in filesArr)
+        {
+            _unicCopyingFilesName.Add(file.Name);
+        }
+        foreach (string file in _unicCopyingFilesName)
+        {
+            _unicCopyingFiles.Add(new FileInfo(Path.Combine(_inputParametr.PathToSourceDirectory.ToString(), file)));
+        }
+    }
     // метод реализующий остановку процесса копирования и завершение работы приложения
     private void _stopCopyingFiles()
     {
@@ -71,8 +88,10 @@ internal class TrasferingFiles
             //проверяем есть ли в папке Target файлы.При наличии файлов процесс протекает дальше
             if (_inputParametr.PathToSourceDirectory.GetFiles().Length > 0)
             {
+                //ищем уникальные файлы в папке Source и его подпапках
+                _searchUnicFile();
                 //проходим циклом по файлам в папке Source
-                foreach (FileInfo file in _inputParametr.PathToSourceDirectory.GetFiles("*", SearchOption.AllDirectories))
+                foreach (FileInfo file in _unicCopyingFiles)
                 {
                     string outputFile = Path.Combine(_inputParametr.PathToDestinationDirectory.ToString(), file.Name);
                     try
